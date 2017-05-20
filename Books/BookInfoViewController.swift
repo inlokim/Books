@@ -152,7 +152,8 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
         let cancelAction = UIAlertAction(
             title: "Cancel",
             style: UIAlertActionStyle.destructive) { (action) in
-                self.downloadManager.cancelTaskAtIndex(0)
+                //self.downloadManager.cancelTaskAtIndex(0)
+                self.dismiss(animated: true, completion: nil)
         }
         
         alertController.addAction(cancelAction)
@@ -181,7 +182,6 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
     
     func safelyDismissAlertController() {
         self.dismiss(animated: true, completion: nil)
-        
         self.parent?.tabBarController?.tabBar.items?.first?.badgeValue = "1"
     }
     
@@ -375,6 +375,7 @@ extension BookInfoViewController: MZDownloadManagerDelegate {
         //    tableView.deleteRows(at: [indexPath], with: UITableViewRowAnimation.left)
         
         let docDirectoryPath : NSString = (MZUtility.baseFilePath as NSString).appendingPathComponent(downloadModel.fileName) as NSString
+        
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: MZUtility.DownloadCompletedNotif as String), object: docDirectoryPath)
     }
     

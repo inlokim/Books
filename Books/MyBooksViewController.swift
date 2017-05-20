@@ -1,33 +1,45 @@
 import UIKit
 import FolioReaderKit
 import MZDownloadManager
+import RealmSwift
 
 class MyBooksViewController: UITableViewController {
     
     var downloadedFilesArray : [String] = []
     var selectedIndexPath    : IndexPath?
     var fileManger           : FileManager = FileManager.default
+   // var myDownloadPath = MZUtility.baseFilePath+"/ePub"
+
     var myDownloadPath = MZUtility.baseFilePath+"/ePub"
 
+    var categoryName = "All"
+    
+    @IBOutlet weak var categoryButton: UIButton!
+    
+    @IBAction func categoryAction(_ sender: Any) {
+        
+    }
+   
+    let config = FolioReaderConfig()
+    
+    
+    @IBOutlet weak var menuButton: UIBarButtonItem!
+    
+    
     override func viewDidLoad() {
+        
         super.viewDidLoad()
         
         // Do any additional setup after loading the view.
        print("ePub Dir :\(MZUtility.baseFilePath+"/ePub")")
         
+       // categoryButton.titleLabel?.text = categoryName+" ▼"
+        
         
         do {
-            let contentOfDir: [String] = try FileManager.default.contentsOfDirectory(atPath: MZUtility.baseFilePath+"/ePub" as String)
-            
-            
-            //downloadedFilesArray.append(contentsOf: contentOfDir)
+            let contentOfDir: [String] = try FileManager.default.contentsOfDirectory(atPath: myDownloadPath as String)
 
             downloadedFilesArray = contentOfDir.filter{ $0.contains(".epub") }
-            
-           /* let index = downloadedFilesArray.index(of: ".DS_Store")
-            if let index = index {
-                downloadedFilesArray.remove(at: index)
-            }*/
             
         } catch let error as NSError {
             print("Error while getting directory content \(error)")
@@ -36,7 +48,58 @@ class MyBooksViewController: UITableViewController {
         NotificationCenter.default.addObserver(self, selector: NSSelectorFromString("downloadFinishedNotification:"), name: NSNotification.Name(rawValue: MZUtility.DownloadCompletedNotif as String), object: nil)
         
         //        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MZDownloadedViewController.downloadFinishedNotification(_:)), name: DownloadCompletedNotif as String, object: nil)
+        
+        readerConfig()
+        
+        
+        
+        //reveal view
+        
+        if revealViewController() != nil {
+            
+            print("revealViewController")
+            //            revealViewController().rearViewRevealWidth = 62
+            menuButton.target = revealViewController()
+            menuButton.action = #selector(SWRevealViewController.revealToggle(_:))
+           
+            
+            view.addGestureRecognizer(self.revealViewController().panGestureRecognizer())
+        }
+
     }
+    
+    
+    func btn1Action() {
+        
+    }
+    
+    
+    func readerConfig()
+    {
+        print("readerConfig")
+        
+        config.shouldHideNavigationOnTap = true
+        config.scrollDirection = .horizontal
+        
+        // See more at FolioReaderConfig.swift
+        //        config.canChangeScrollDirection = false
+        //        config.enableTTS = false
+        //        config.allowSharing = false
+        config.tintColor = UIColor.red
+        //        config.toolBarTintColor = UIColor.redColor()
+        //        config.toolBarBackgroundColor = UIColor.purpleColor()
+        //        config.menuTextColor = UIColor.brownColor()
+        //        config.menuBackgroundColor = UIColor.lightGrayColor()
+        //        config.hidePageIndicator = true
+        //    config.realmConfiguration = Realm.Configuration(fileURL: FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("highlights.realm"))
+        
+  //      print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("highlights.realm"))
+        
+        
+       // config.realmConfiguration = Realm.Configuration(fileURL: URL(fileURLWithPath: myDownloadPath).appendingPathComponent("highlights.realm"))
+
+    }
+    
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -45,9 +108,13 @@ class MyBooksViewController: UITableViewController {
     
     // MARK: - NSNotification Methods -
     
-    func downloadFinishedNotification(_ notification : Notification) {
+    func downloadFinishedNotification(_ notification : Notification)
+    {
+        print("downloadFinishedNotification")
+        
         let fileName : NSString = notification.object as! NSString
         downloadedFilesArray.append(fileName.lastPathComponent)
+        tableView.reloadData()
         //tableView.reloadSections(IndexSet(integer: 0), with: UITableViewRowAnimation.fade)
 
     }
@@ -58,8 +125,6 @@ class MyBooksViewController: UITableViewController {
 extension MyBooksViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        
-        
         return downloadedFilesArray.count
     }
     
@@ -69,6 +134,8 @@ extension MyBooksViewController {
         let cell : BookTableViewCell = self.tableView.dequeueReusableCell(withIdentifier: cellIdentifier as String, for: indexPath) as! BookTableViewCell
         
         let bookPath = myDownloadPath + "/" + downloadedFilesArray[(indexPath as NSIndexPath).row]
+        
+        print("bookPath:\(bookPath)")
         
         let (title, author, cover) = getBookInfo(bookPath)
         
@@ -93,15 +160,34 @@ func getBookInfo(_ bookPath:String) -> (String, String, UIImage?)
 {
     var title = ""
     var author = ""
-    var cover = Util.burnText2ImageView(image:UIImage(named: "BookCover.png")!, title: title)
+    var cover = UIImage()
     
     do {
         title = try FolioReader.getTitle(bookPath)!
         author = try FolioReader.getAuthorName(bookPath)!
-        cover = try FolioReader.getCoverImage(bookPath)!
+        
+        if let myCover = try FolioReader.getCoverImage(bookPath) { cover = myCover }
+        else {cover = Util.burnText2ImageView(image:UIImage(named: "BookCover.png")!, title: title)}
+        
     } catch {
         print(error)
+        cover = Util.burnText2ImageView(image:UIImage(named: "BookCover.png")!, title: title)
     }
+    /*
+    
+    title = FolioReader.getTitle(bookPath)!
+    author = FolioReader.getAuthorName(bookPath)!
+    
+    if FolioReader.getCoverImage(bookPath) != nil
+    {
+        cover = FolioReader.getCoverImage(bookPath)!
+    }
+    else {
+        cover = Util.burnText2ImageView(image:UIImage(named: "BookCover.png")!, title: title)
+    }
+    
+    */
+    
     
     return (title, author, cover)
 }
@@ -122,21 +208,9 @@ extension MyBooksViewController {
     
     func openEpub(_ epubName: String) {
         
-        let config = FolioReaderConfig()
-        config.shouldHideNavigationOnTap = true
-        config.scrollDirection = .horizontal
+
         
-        // See more at FolioReaderConfig.swift
-        //        config.canChangeScrollDirection = false
-        //        config.enableTTS = false
-        //        config.allowSharing = false
-                config.tintColor = UIColor.blue
-        //        config.toolBarTintColor = UIColor.redColor()
-        //        config.toolBarBackgroundColor = UIColor.purpleColor()
-        //        config.menuTextColor = UIColor.brownColor()
-        //        config.menuBackgroundColor = UIColor.lightGrayColor()
-        //        config.hidePageIndicator = true
-        //        config.realmConfiguration = Realm.Configuration(fileURL: FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("highlights.realm"))
+        
         
         // Custom sharing quote background
   /*      let customImageQuote = QuoteImage(withImage: UIImage(named: "demo-bg")!, alpha: 0.6, backgroundColor: UIColor.black)
@@ -154,7 +228,7 @@ extension MyBooksViewController {
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         let fileName : NSString = downloadedFilesArray[(indexPath as NSIndexPath).row] as NSString
-        let fileURL  : URL = URL(fileURLWithPath: (MZUtility.baseFilePath as NSString).appendingPathComponent(fileName as String))
+        let fileURL  : URL = URL(fileURLWithPath: (myDownloadPath as NSString).appendingPathComponent(fileName as String))
         
         do {
             try fileManger.removeItem(at: fileURL)

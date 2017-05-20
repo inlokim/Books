@@ -8,8 +8,8 @@ use_frameworks!
 
 target 'Books' do
   pod 'MZDownloadManager', '3.2'
-  #pod 'FolioReaderKit', '1.1.8', path: './FolioReaderKit-master'
-  pod 'FolioReaderKit', '1.1.0'
+  pod 'FolioReaderKit', path: './FolioReaderKit-master'
+  #pod 'FolioReaderKit'
   pod 'SDWebImage' , '4.0.0'
   pod 'Cosmos', '8.0.2'
 end
