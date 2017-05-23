@@ -61,7 +61,7 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
     
     //let alertView = UIAlertController(title: "Please wait", message: nil, preferredStyle: .alert)
     
-    
+    var files = [DownloadedFile]()
     
     
     override func viewDidLoad()
@@ -86,14 +86,134 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
         
         setSesstionId(book.url)
         
-
+        print("book url : \(book.url)")
+        
         //Review Parse
         reviewXMLParse()
         
         tableView.reloadData()
+        
+        
+        //let url = "http://www.gutenberg.org/ebooks/\(book.bookId).epub.images?session_id=\(Util.sessionId!)"
+        
+        //let url = "http://www.gutenberg.org/cache/epub/\(book.bookId)/pg\(book.bookId)-images.epub?session_id=\(Util.sessionId!)"
+        
+        //let url = "http://highwill.co.kr/index.php/archives/1241333"
+        
+        //print("fileURL : \(url)")
+        //print(verifyUrl(urlString: url))
+        
+        //print(fileExistsAt(url: URL(string: url)!))
+        
+        //fileExistsAt2(url: URL(string: url)!, completion: {(value:Bool) -> Void in print(value)})
+        
+       
+        
+        getDataFromURL("http://m.gutenberg.org/ebooks/\(book.bookId).mobile")
       
     }
     
+    func getDataFromURL(_ link:String)
+    {
+        print("link = "+link)
+        
+//        self.runActivity()
+        
+        let url:URL = URL(string: link)!
+        let session = URLSession.shared
+        
+        let request = NSMutableURLRequest(url: url)
+        request.httpMethod = "GET"
+        request.cachePolicy = NSURLRequest.CachePolicy.reloadIgnoringCacheData
+        
+        let task = session.dataTask(with: request as URLRequest, completionHandler: {
+            (
+            data, response, error) in
+            
+            guard let _:Data = data, let _:URLResponse = response  , error == nil else {
+                
+                return
+            }
+            self.extractHTML(data!)
+        })
+        
+        task.resume()
+    }
+    
+    
+    func extractHTML(_ data: Data)
+    {
+        let doc = TFHpple(htmlData: data as Data!)
+        let pathQuery1 = "//li[@class='filelink']/a[@class='table link']"
+        
+        //let pathQuery2 = "//li[@class='booklink']/a[@class='table link']/span/span[@class='cell content']"
+        
+        if let elements = doc?.search(withXPathQuery: pathQuery1) as? [TFHppleElement] {
+            
+            for element in elements {
+               
+                let contentLines = element.content.lines
+                //print("contentLines : \(contentLines)")
+                
+
+                let fileType = contentLines[6]
+                let fileSize = contentLines[7]
+                let downloadedFile = DownloadedFile()
+                
+                downloadedFile.type = fileType
+                downloadedFile.size = fileSize
+                
+                files.append(downloadedFile)
+
+            }
+        }
+        
+        DispatchQueue.main.async(execute: {
+           // self.tableView.reloadData()
+           // self.stopActivity()
+            
+            
+        })
+    }
+    
+    
+    
+/*
+    
+    func verifyUrl(urlString: String?) -> Bool {
+        guard let urlString = urlString,
+            let url = URL(string: urlString) else {
+                return false
+        }
+        
+        return UIApplication.shared.canOpenURL(url)
+    }
+    
+    func fileExistsAt(url : URL) -> Bool {
+        
+        if let fileExists = try? url.checkResourceIsReachable() {
+            return fileExists
+        }
+        return false
+    }
+    
+    func fileExistsAt2(url : URL, completion: @escaping (Bool) -> Void) {
+        let checkSession = Foundation.URLSession.shared
+        var request = URLRequest(url: url)
+        request.httpMethod = "HEAD"
+        request.timeoutInterval = 1.0 // Adjust to your needs
+        
+        let task = checkSession.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
+            if let httpResp: HTTPURLResponse = response as? HTTPURLResponse {
+                completion(httpResp.statusCode == 200)
+            }
+        })
+        
+        task.resume()
+    }
+    
+*/
+   
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -130,7 +250,7 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
         
         let fileURL  : NSString = "http://www.gutenberg.org/ebooks/"+book.bookId+".epub.images?session_id="+self.sessionId as NSString
         
-        print("url = "+(fileURL as String))
+       // print("verifyUrl = \(self.verifyUrl(urlString: fileURL as String))")
         
         
         let fileName = book.bookId+".epub"
@@ -142,6 +262,8 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
         
         self.createAlert()
     }
+    
+    
     
     func createAlert()
     {
@@ -256,7 +378,7 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
             review.content = content
             
             
-            print("subject : \(subject)")
+            //print("subject : \(subject)")
             reviewArray.append(review)
         }
     }
@@ -290,7 +412,7 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
-        print("reviewArray.count : \(reviewArray.count)")
+        //print("reviewArray.count : \(reviewArray.count)")
         
         return reviewArray.count
     }

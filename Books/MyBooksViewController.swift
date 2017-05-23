@@ -2,17 +2,15 @@ import UIKit
 import FolioReaderKit
 import MZDownloadManager
 import RealmSwift
+import PDFReader
 
 class MyBooksViewController: UITableViewController {
     
     var downloadedFilesArray : [String] = []
     var selectedIndexPath    : IndexPath?
     var fileManger           : FileManager = FileManager.default
-   // var myDownloadPath = MZUtility.baseFilePath+"/ePub"
-
-    var myDownloadPath = MZUtility.baseFilePath+"/ePub"
-
-    var categoryName = "All"
+    
+    var myDownloadPath = "\(MZUtility.baseFilePath)/ePub"
     
     @IBOutlet weak var categoryButton: UIButton!
     
@@ -32,8 +30,6 @@ class MyBooksViewController: UITableViewController {
         
         // Do any additional setup after loading the view.
        print("ePub Dir :\(MZUtility.baseFilePath+"/ePub")")
-        
-       // categoryButton.titleLabel?.text = categoryName+" ▼"
         
         
         do {
@@ -58,7 +54,7 @@ class MyBooksViewController: UITableViewController {
         if revealViewController() != nil {
             
             print("revealViewController")
-            //            revealViewController().rearViewRevealWidth = 62
+            //revealViewController().rearViewRevealWidth = 62
             menuButton.target = revealViewController()
             menuButton.action = #selector(SWRevealViewController.revealToggle(_:))
            
@@ -73,7 +69,20 @@ class MyBooksViewController: UITableViewController {
         
     }
     
+    //PDF
+    func readPDF()
+    {
+        let path = "http://www.gutenberg.org/files/33283/33283-pdf.pdf?session_id=c8598ceaff9853f40d0cbc6c33584273db946028"
+        let remotePDFDocumentURLPath = path
+        let remotePDFDocumentURL = URL(string: remotePDFDocumentURLPath)!
+        let document = PDFDocument(url: remotePDFDocumentURL)!
+        
+        let readerController = PDFViewController.createNew(with: document)
+        navigationController?.pushViewController(readerController, animated: true)
+    }
     
+    
+    //EPUB
     func readerConfig()
     {
         print("readerConfig")
@@ -199,10 +208,12 @@ extension MyBooksViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
+       /*
         selectedIndexPath = indexPath
         let epubName = downloadedFilesArray[indexPath.row]
-        openEpub(epubName)
+        openEpub(epubName) */
+        
+        readPDF()
         
     }
     

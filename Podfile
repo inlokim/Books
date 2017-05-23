@@ -12,5 +12,6 @@ target 'Books' do
   #pod 'FolioReaderKit'
   pod 'SDWebImage' , '4.0.0'
   pod 'Cosmos', '8.0.2'
+  pod 'PDFReader'
 end
 

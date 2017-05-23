@@ -10,6 +10,50 @@ import UIKit
 
 class Util {
 
+    
+    public static var sessionId : String!
+    
+    open static func setSessionId()
+    {
+        let link = "http://m.gutenberg.org/ebooks/search.mobile/?sort_order=release_date"
+        let url:URL = URL(string: link)!
+        let session = URLSession.shared
+        
+        let request = NSMutableURLRequest(url: url)
+        request.httpMethod = "GET"
+        request.cachePolicy = NSURLRequest.CachePolicy.reloadIgnoringCacheData
+        
+        let task = session.dataTask(with: request as URLRequest, completionHandler: {data, response, error -> Void in
+            
+            // Save the incoming HTTP Response
+            
+            let httpResponse: HTTPURLResponse = response as! HTTPURLResponse
+            
+            // Since the incoming cookies will be stored in one of the header fields in the HTTP Response, parse through the header fields to find the cookie field and save the data
+            
+            let cookies = HTTPCookie.cookies(withResponseHeaderFields: httpResponse.allHeaderFields as! [String : String], for: (response?.url!)!)
+            
+            print("Cookies.count: \(cookies.count)")
+            
+            // HTTPCookieStorage.shared.setCookies(cookies as [AnyObject] as! [HTTPCookie], for: response?.url!, mainDocumentURL: nil)
+            
+            for cookie in cookies {
+                
+                print("name: \(cookie.name) value: \(cookie.value)")
+                Util.sessionId = cookie.value
+            }
+        })
+        
+        task.resume()
+    }
+    
+    
+    open static let homeDir : String = {
+        var paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as [String]
+        return paths[0]
+    }()
+    
+    
     public static func imageViewShadow(imageView:UIImageView) -> UIImageView
     {
         imageView.layer.shadowColor = UIColor.black.cgColor

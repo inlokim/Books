@@ -73,8 +73,6 @@ class ListTableViewController: UITableViewController
         //searchController.searchBar.scopeButtonTitles = ["All", "Chocolate", "Hard", "Other"]
         tableView.tableHeaderView = searchController.searchBar
         
-        
-        
         actInd.center = (self.parent?.view.center)!
         actInd.hidesWhenStopped = true
         actInd.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.gray
@@ -84,6 +82,9 @@ class ListTableViewController: UITableViewController
         //XML
         sortOrder = "sort_order=release_date"
         getDataFromURL(baseUrl+sortOrder)
+        
+        
+        print("session Id : \(Util.sessionId)")
     }
     
     
@@ -151,10 +152,9 @@ class ListTableViewController: UITableViewController
                 book.bookId = bookId
                 book.title = title
                 book.author = author
-                book.url = baseUrl+sortOrder
-                
-                //print("title : "+contentLines[6])
-                //print("author : "+contentLines[7])
+                book.url = baseUrl+sortOrder //used for Session Id
+
+                //print("book.url : "+book.url)
                 
                 books.append(book)
                 //print(contentLines)

@@ -13,6 +13,7 @@ PODS:
   - JSQWebViewController (5.0.0)
   - MenuItemKit (2.0)
   - MZDownloadManager (3.2)
+  - PDFReader (2.4.0)
   - Realm (2.7.0):
     - Realm/Headers (= 2.7.0)
   - Realm/Headers (2.7.0)
@@ -28,6 +29,7 @@ DEPENDENCIES:
   - Cosmos (= 8.0.2)
   - FolioReaderKit (from `./FolioReaderKit-master`)
   - MZDownloadManager (= 3.2)
+  - PDFReader
   - SDWebImage (= 4.0.0)
 
 EXTERNAL SOURCES:
@@ -42,12 +44,13 @@ SPEC CHECKSUMS:
   JSQWebViewController: 0461aa42612b221571556df61d9c09f080cb2eef
   MenuItemKit: 9af69953dc983803ee85230e205fadbac0f26213
   MZDownloadManager: 463f78e00530f3661a5adea649c1801747cc6165
+  PDFReader: 0bb6be11c8876c6cea2598f0a0ab9b6640a8a018
   Realm: 07e5d3a9e0e41d65fd5f9f05150ed6295d0f093b
   RealmSwift: 6d06425d3900c86473c4f323bf6949b43fca22bc
   SDWebImage: 76a6348bdc74eb5a55dd08a091ef298e56b55e41
   SSZipArchive: 04547dfa448be5ed7ecbaf7eaf8a6e9eb9b42997
   ZFDragableModalTransition: 0d294eaaba6edfcb9839595de765f9ca06a4b524
 
-PODFILE CHECKSUM: 11c6901fbf3006c11cd9c70aaf613b3356b0fd97
+PODFILE CHECKSUM: cbdc0ce6785387055d8c99c54cde0897202ef7be
 
 COCOAPODS: 1.2.1
