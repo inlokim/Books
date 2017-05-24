@@ -28,11 +28,18 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
     //Book
     var book:Book = Book()
     
+    
+    //File
+    var fileType = String()
+    var fileSize = String()
+    
     @IBOutlet weak var authorLabel: UILabel!
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var imageView: UIImageView!
     
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var fileTypeLabel: UILabel!
+    @IBOutlet weak var fileSizeLabel: UILabel!
     
     var downloadingViewObj : BookInfoViewController?
     let myDownloadPath = MZUtility.baseFilePath+"/ePub"
@@ -67,6 +74,8 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
     override func viewDidLoad()
     {
         super.viewDidLoad()
+        
+        getDataFromURL("http://m.gutenberg.org/ebooks/\(book.bookId).mobile")
         
         
         authorLabel.text = book.author
@@ -106,11 +115,7 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
         //print(fileExistsAt(url: URL(string: url)!))
         
         //fileExistsAt2(url: URL(string: url)!, completion: {(value:Bool) -> Void in print(value)})
-        
-       
-        
-        getDataFromURL("http://m.gutenberg.org/ebooks/\(book.bookId).mobile")
-      
+    
     }
     
     func getDataFromURL(_ link:String)
@@ -146,73 +151,64 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
         let doc = TFHpple(htmlData: data as Data!)
         let pathQuery1 = "//li[@class='filelink']/a[@class='table link']"
         
-        //let pathQuery2 = "//li[@class='booklink']/a[@class='table link']/span/span[@class='cell content']"
-        
-        if let elements = doc?.search(withXPathQuery: pathQuery1) as? [TFHppleElement] {
-            
-            for element in elements {
-               
+        if let elements = doc?.search(withXPathQuery: pathQuery1) as? [TFHppleElement]
+        {
+            for element in elements
+            {
                 let contentLines = element.content.lines
-                //print("contentLines : \(contentLines)")
+                print("contentLines : \(contentLines)")
                 
+                if contentLines[6] == "EPUB (with images)"
+                {
+                    print("EPUB (with images)")
+                    fileType = contentLines[6]
+                    fileSize = contentLines[7]
+                    
+                    hide(false)
+                    
+                    break
+                }
+                else if contentLines[6] == "EPUB (no images)"
+                {
+                    fileType = contentLines[6]
+                    fileSize = contentLines[7]
+                    
+                    hide(false)
 
-                let fileType = contentLines[6]
-                let fileSize = contentLines[7]
-                let downloadedFile = DownloadedFile()
-                
-                downloadedFile.type = fileType
-                downloadedFile.size = fileSize
-                
-                files.append(downloadedFile)
+                    break
+                }
+                else if contentLines[6] == "PDF"
+                {
+                    fileType = contentLines[6]
+                    fileSize = contentLines[7]
+                    
+                    hide(false)
 
+                    break
+                }
+                else
+                {
+                    print("else")
+                    hide(true)
+                }
             }
         }
         
         DispatchQueue.main.async(execute: {
            // self.tableView.reloadData()
            // self.stopActivity()
-            
-            
+            if let typeLabel = self.fileTypeLabel { typeLabel.text = "File Type : \(self.fileType)"}
+            if let sizeLabel = self.fileSizeLabel { sizeLabel.text = "File Size : \(self.fileSize)"}
         })
     }
     
-    
-    
-/*
-    
-    func verifyUrl(urlString: String?) -> Bool {
-        guard let urlString = urlString,
-            let url = URL(string: urlString) else {
-                return false
-        }
-        
-        return UIApplication.shared.canOpenURL(url)
+    func hide(_ param : Bool)
+    {
+        fileTypeLabel.isHidden = param
+        fileSizeLabel.isHidden = param
+        downloadButton.isHidden = param
     }
     
-    func fileExistsAt(url : URL) -> Bool {
-        
-        if let fileExists = try? url.checkResourceIsReachable() {
-            return fileExists
-        }
-        return false
-    }
-    
-    func fileExistsAt2(url : URL, completion: @escaping (Bool) -> Void) {
-        let checkSession = Foundation.URLSession.shared
-        var request = URLRequest(url: url)
-        request.httpMethod = "HEAD"
-        request.timeoutInterval = 1.0 // Adjust to your needs
-        
-        let task = checkSession.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
-            if let httpResp: HTTPURLResponse = response as? HTTPURLResponse {
-                completion(httpResp.statusCode == 200)
-            }
-        })
-        
-        task.resume()
-    }
-    
-*/
    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -237,6 +233,8 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
     }
     
     
+    ////Download handling
+    
     func setUpDownloadingViewController() {
         let tabBarTabs : NSArray? = self.tabBarController?.viewControllers as NSArray?
         let mzDownloadingNav : UINavigationController = tabBarTabs?.object(at: 0) as! UINavigationController
@@ -248,21 +246,31 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
     {
         print("downloadFile")
         
-        let fileURL  : NSString = "http://www.gutenberg.org/ebooks/"+book.bookId+".epub.images?session_id="+self.sessionId as NSString
+        var fileURL  = NSString()
+        var fileName = String()
         
-       // print("verifyUrl = \(self.verifyUrl(urlString: fileURL as String))")
-        
-        
-        let fileName = book.bookId+".epub"
-        
-        //self.downloadManager.addDownloadTask(fileName as String, fileURL: fileURL.addingPercentEscapes(using: String.Encoding.utf8.rawValue)!, destinationPath: myDownloadPath)
+        //PDF
+        if fileTypeLabel.text == "PDF"
+        {
+            fileURL = "http://www.gutenberg.org/files/\(book.bookId)/\(book.bookId)-pdf.pdf?session_id=\(self.sessionId)" as NSString
+            fileName = "\(book.bookId).pdf"
+        }
+        //EPUB
+        else
+        {
+            var imageFlag = String()
+            
+            if fileTypeLabel.text == "EPUB (with images)" { imageFlag = "images" }
+            if fileTypeLabel.text == "EPUB (no images)" { imageFlag = "noimages" }
+            
+            fileURL = "http://www.gutenberg.org/ebooks/\(book.bookId).epub.\(imageFlag)?session_id=\(self.sessionId)" as NSString
+            
+            fileName = "\(book.bookId).epub"
+        }
         
         self.downloadManager.addDownloadTask(fileName as String, fileURL: fileURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!, destinationPath: myDownloadPath)
-        
-        
         self.createAlert()
     }
-    
     
     
     func createAlert()
@@ -272,7 +280,7 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
         //alerController.addAction(UIAlertAction(title: "", style: .default, handler: nil))
         
         let cancelAction = UIAlertAction(
-            title: "Cancel",
+            title: "",
             style: UIAlertActionStyle.destructive) { (action) in
                 //self.downloadManager.cancelTaskAtIndex(0)
                 self.dismiss(animated: true, completion: nil)
@@ -299,8 +307,6 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
         //print("refeshProgress")
         self.progressDownload.progress = downloadModel.progress
     }
-    
-    
     
     func safelyDismissAlertController() {
         self.dismiss(animated: true, completion: nil)

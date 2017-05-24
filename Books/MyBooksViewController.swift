@@ -47,8 +47,7 @@ class MyBooksViewController: UITableViewController {
         
         readerConfig()
         
-        
-        
+       
         //reveal view
         
         if revealViewController() != nil {
