@@ -9,6 +9,7 @@
 import UIKit
 import SDWebImage
 import MZDownloadManager
+import GoogleMobileAds
 
 class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDelegate, UITableViewDataSource
 {
@@ -27,7 +28,8 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
     
     //Book
     var book:Book = Book()
-    
+    //var pathOfMyBooksPlist = String()
+    //var booksInfo:NSMutableArray = NSMutableArray()
     
     //File
     var fileType = String()
@@ -44,10 +46,14 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
     var downloadingViewObj : BookInfoViewController?
     let myDownloadPath = MZUtility.baseFilePath+"/ePub"
     
+    @IBOutlet weak var bannerView: GADBannerView!
     //cookie session id
     var sessionId : String!
     
+    //adMob
+    //ID: ca-app-pub-1966927625201357~9016686428
     
+   
     //DownloadManager
     
     lazy var downloadManager: MZDownloadManager = {
@@ -70,7 +76,7 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
     
     var files = [DownloadedFile]()
     
-    
+        
     override func viewDidLoad()
     {
         super.viewDidLoad()
@@ -98,9 +104,9 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
         print("book url : \(book.url)")
         
         //Review Parse
-        reviewXMLParse()
+       // reviewXMLParse()
         
-        tableView.reloadData()
+       // tableView.reloadData()
         
         
         //let url = "http://www.gutenberg.org/ebooks/\(book.bookId).epub.images?session_id=\(Util.sessionId!)"
@@ -116,7 +122,98 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
         
         //fileExistsAt2(url: URL(string: url)!, completion: {(value:Bool) -> Void in print(value)})
     
+        //loadPlist()
+        
+        
+        //check this book already has downloaded
+        
+        if isBookDownloaded() { downloadButton.isHidden = true}
+        else {downloadButton.isHidden = false}
+       
+        
+        
+        print("Google Mobile Ads SDK version: " + GADRequest.sdkVersion())
+        bannerView.adUnitID = "ca-app-pub-3940256099942544/2934735716" //test
+        bannerView.rootViewController = self
+        bannerView.load(GADRequest())
     }
+   
+    
+    //Check Aleady Downloaded
+    
+    func isBookDownloaded() -> Bool
+    {
+        //Plist
+        let pathOfMyBooksPlist = myDownloadPath+"/MyBooks.plist"
+        
+        var booksInfo = NSMutableArray()
+        
+        if NSMutableArray(contentsOfFile: pathOfMyBooksPlist) != nil {
+            booksInfo = NSMutableArray(contentsOfFile: pathOfMyBooksPlist)!
+        }
+        else { booksInfo = NSMutableArray() }
+        
+        for info in booksInfo
+        {
+            let dict = info as! NSMutableDictionary
+            let bookId = dict.object(forKey: "id") as! String
+            
+            print("bookId : \(bookId), book.bookId : \(book.bookId)")
+            
+            if book.bookId == bookId {
+
+                return true
+            }
+        }
+        
+        return false
+    }
+
+    
+    
+/*    func loadPlist()
+    {
+        let path = Bundle.main.path(forResource: "MyBooks", ofType: "plist")!
+        let dict = NSDictionary(contentsOfFile: path) as! [String: AnyObject]
+        
+        if let CoachMarksDict = dict["All Books"] {
+            print("Info.plist : \(CoachMarksDict)")
+            
+            var dashC = CoachMarksDict["Tom sawyer"]
+            print("DashBoardCompleted state :\(String(describing: dashC)) ")
+        }
+    }*/
+    
+    func updateBooksInfo()
+    {
+        
+        print("updateBooksInfo")
+
+        var saveBooksInfo = NSMutableArray()
+        
+        let path = myDownloadPath+"/MyBooks.plist"
+        
+        if NSMutableArray(contentsOfFile: path) != nil {
+            saveBooksInfo = NSMutableArray(contentsOfFile: path)!
+        }
+        else {
+            saveBooksInfo = NSMutableArray()
+        }
+        
+        let aBook = NSMutableDictionary()
+        
+        aBook.setValue(book.bookId, forKey: "id")
+        aBook.setValue(self.fileType, forKey: "file_type")
+        aBook.setValue(book.title, forKey: "title")
+        aBook.setValue(book.author, forKey: "author")
+        
+        saveBooksInfo.add(aBook)
+        
+        saveBooksInfo = NSMutableArray(array: saveBooksInfo.reverseObjectEnumerator().allObjects).mutableCopy() as! NSMutableArray
+        
+        saveBooksInfo.write(toFile:path, atomically: true)
+    }
+    
     
     func getDataFromURL(_ link:String)
     {
@@ -249,29 +346,30 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
         var fileURL  = NSString()
         var fileName = String()
         
+        print("fileType: \(fileType)")
+        
         //PDF
-        if fileTypeLabel.text == "PDF"
+        if fileType == "PDF"
         {
-            fileURL = "http://www.gutenberg.org/files/\(book.bookId)/\(book.bookId)-pdf.pdf?session_id=\(self.sessionId)" as NSString
+            fileURL = "http://www.gutenberg.org/files/\(book.bookId)/\(book.bookId)-pdf.pdf?session_id=\(self.sessionId!)" as NSString
             fileName = "\(book.bookId).pdf"
         }
         //EPUB
         else
         {
-            var imageFlag = String()
+            var imageFlag = "images"
             
-            if fileTypeLabel.text == "EPUB (with images)" { imageFlag = "images" }
-            if fileTypeLabel.text == "EPUB (no images)" { imageFlag = "noimages" }
+            if fileType == "EPUB (no images)" { imageFlag = "noimages" }
             
-            fileURL = "http://www.gutenberg.org/ebooks/\(book.bookId).epub.\(imageFlag)?session_id=\(self.sessionId)" as NSString
-            
+            fileURL = "http://www.gutenberg.org/ebooks/\(book.bookId).epub.\(imageFlag)?session_id=\(self.sessionId!)" as NSString
             fileName = "\(book.bookId).epub"
         }
+        
+        print("fileURL : \(fileURL)")
         
         self.downloadManager.addDownloadTask(fileName as String, fileURL: fileURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!, destinationPath: myDownloadPath)
         self.createAlert()
     }
-    
     
     func createAlert()
     {
@@ -310,7 +408,7 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
     
     func safelyDismissAlertController() {
         self.dismiss(animated: true, completion: nil)
-        self.parent?.tabBarController?.tabBar.items?.first?.badgeValue = "1"
+        //self.parent?.tabBarController?.tabBar.items?.first?.badgeValue = "1"
     }
     
     
@@ -334,9 +432,7 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
             let cookies = HTTPCookie.cookies(withResponseHeaderFields: httpResponse.allHeaderFields as! [String : String], for: (response?.url!)!)
             
             //print("Cookies.count: \(cookies.count)")
-            
             // HTTPCookieStorage.shared.setCookies(cookies as [AnyObject] as! [HTTPCookie], for: response?.url!, mainDocumentURL: nil)
-            
             
             for cookie in cookies {
                 
@@ -412,7 +508,6 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
     {
         print("failure error: %@", parseError)
     }
-
     
     //Tableview Methods
 
@@ -496,16 +591,35 @@ extension BookInfoViewController: MZDownloadManagerDelegate {
         
         self.safelyDismissAlertController()
         
-        downloadManager.presentNotificationForDownload("Ok", notifBody: "Download did completed")
-        //print("downloadManager.downloadingArray.count : \(downloadManager.downloadingArray.count)")
-        
-        //    let indexPath = IndexPath.init(row: index, section: 0)
-        //    tableView.deleteRows(at: [indexPath], with: UITableViewRowAnimation.left)
+        /* downloadManager.presentNotificationForDownload("Ok", notifBody: "Download did completed")
         
         let docDirectoryPath : NSString = (MZUtility.baseFilePath as NSString).appendingPathComponent(downloadModel.fileName) as NSString
+        NotificationCenter.default.post(name: NSNotification.Name(rawValue: MZUtility.DownloadCompletedNotif as String), object: docDirectoryPath)*/
         
-        NotificationCenter.default.post(name: NSNotification.Name(rawValue: MZUtility.DownloadCompletedNotif as String), object: docDirectoryPath)
+        print("download Finished")
+        
+        self.downloadButton.isHidden = true
+        
+        updateBooksInfo()
+        
+        NotificationCenter.default.post(name: NSNotification.Name(rawValue: MZUtility.DownloadCompletedNotif as String), object: nil)
+        
+       // updateBadge()
     }
+    
+/*    func updateBadge()
+    {
+        if (downloadManager.downloadingArray.count == 0)
+        {
+            tabBarController?.tabBar.items?[0].badgeValue = nil
+        }
+        else
+        {
+            tabBarController?.tabBar.items?[0].badgeValue = String(downloadManager.downloadingArray.count)
+        }
+        
+    }
+*/
     
     func downloadRequestDidFailedWithError(_ error: NSError, downloadModel: MZDownloadModel, index: Int) {
 //        self.safelyDismissAlertController()

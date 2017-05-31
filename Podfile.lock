@@ -1,6 +1,20 @@
 PODS:
   - AEXML (4.0.0)
   - Cosmos (8.0.2)
+  - Firebase/AdMob (4.0.0):
+    - Firebase/Core
+    - Google-Mobile-Ads-SDK (= 7.20.0)
+  - Firebase/Core (4.0.0):
+    - FirebaseAnalytics (= 4.0.0)
+    - FirebaseCore (= 4.0.0)
+  - FirebaseAnalytics (4.0.0):
+    - FirebaseCore (~> 4.0)
+    - FirebaseInstanceID (~> 2.0)
+    - GoogleToolboxForMac/NSData+zlib (~> 2.1)
+  - FirebaseCore (4.0.0):
+    - GoogleToolboxForMac/NSData+zlib (~> 2.1)
+  - FirebaseInstanceID (2.0.0):
+    - FirebaseCore (~> 4.0)
   - FolioReaderKit (1.1.0):
     - AEXML (= 4.0)
     - FontBlaster (= 3.0.0)
@@ -10,6 +24,10 @@ PODS:
     - SSZipArchive (~> 1.6)
     - ZFDragableModalTransition (~> 0.6)
   - FontBlaster (3.0.0)
+  - Google-Mobile-Ads-SDK (7.20.0)
+  - GoogleToolboxForMac/Defines (2.1.1)
+  - GoogleToolboxForMac/NSData+zlib (2.1.1):
+    - GoogleToolboxForMac/Defines (= 2.1.1)
   - JSQWebViewController (5.0.0)
   - MenuItemKit (2.0)
   - MZDownloadManager (3.2)
@@ -27,6 +45,8 @@ PODS:
 
 DEPENDENCIES:
   - Cosmos (= 8.0.2)
+  - Firebase/AdMob
+  - Firebase/Core
   - FolioReaderKit (from `./FolioReaderKit-master`)
   - MZDownloadManager (= 3.2)
   - PDFReader
@@ -39,8 +59,14 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AEXML: 6fc6433aa35bdc15dd8eb8d54eb7aa4520a010eb
   Cosmos: 007c0b8e33a85e5363911bdd933571bbe221f7ef
+  Firebase: 284eea779b73fdff309791817da7c68bff8dd572
+  FirebaseAnalytics: 6f08e746f7d66f5452931bc2e822b5df9c66b64a
+  FirebaseCore: 85ad466044c2f013cdb167f85d426d15b128114a
+  FirebaseInstanceID: 9fbf536668f4d3f0880e7438456dabd1376e294b
   FolioReaderKit: a857f81602d29506bfc7275f60cf3c08f33dacbc
   FontBlaster: 0f4a3e2f965968e2dfc3f7f5cec7214c3f3b2f07
+  Google-Mobile-Ads-SDK: 168312cdc167fa22746d4ea8e839fc4825dd2966
+  GoogleToolboxForMac: 8e329f1b599f2512c6b10676d45736bcc2cbbeb0
   JSQWebViewController: 0461aa42612b221571556df61d9c09f080cb2eef
   MenuItemKit: 9af69953dc983803ee85230e205fadbac0f26213
   MZDownloadManager: 463f78e00530f3661a5adea649c1801747cc6165
@@ -51,6 +77,6 @@ SPEC CHECKSUMS:
   SSZipArchive: 04547dfa448be5ed7ecbaf7eaf8a6e9eb9b42997
   ZFDragableModalTransition: 0d294eaaba6edfcb9839595de765f9ca06a4b524
 
-PODFILE CHECKSUM: cbdc0ce6785387055d8c99c54cde0897202ef7be
+PODFILE CHECKSUM: a9147841aa1ff0d2e1d9b2ef05dc3b6cd65a12e1
 
-COCOAPODS: 1.2.1
+COCOAPODS: 1.2.0

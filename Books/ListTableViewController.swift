@@ -8,6 +8,7 @@
 
 import UIKit
 import SDWebImage
+import iAd
 
 extension String {
     var lines: [String] {
@@ -27,6 +28,8 @@ class ListTableViewController: UITableViewController
     var baseUrl = "http://m.gutenberg.org/ebooks/search.mobile/?"
     let rowCountDisplayed = 25
     
+    var searchKeyword = ""
+    
     //  let spinner = UIActivityIndicatorView()
     
     var actInd : UIActivityIndicatorView = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: 40, height: 40)) as UIActivityIndicatorView
@@ -34,7 +37,12 @@ class ListTableViewController: UITableViewController
     var books = [Book]()
     var booksCount:Int = 0
     
+  
+    var startIndex : Int = 0
     
+    
+   // let adBannerView = ADBannerView(adType: ADAdType.mediumRectangle) //Create banner
+
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     
     @IBAction func sortOrderChanged(_ sender: Any) {
@@ -85,7 +93,8 @@ class ListTableViewController: UITableViewController
         
         
         print("session Id : \(Util.sessionId)")
-    }
+     }
+
     
     
     func runActivity() {
@@ -104,7 +113,9 @@ class ListTableViewController: UITableViewController
         
         self.runActivity()
         
-        let url:URL = URL(string: link)!
+        let nsLink = link as NSString
+        let urlStr  = nsLink.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        let url:URL = URL(string: urlStr!)!
         let session = URLSession.shared
         
         let request = NSMutableURLRequest(url: url)
@@ -119,6 +130,7 @@ class ListTableViewController: UITableViewController
                 
                 return
             }
+            
             self.extractHTML(data!)
         })
         
@@ -225,7 +237,7 @@ class ListTableViewController: UITableViewController
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         
         if (indexPath.row % 2) == 0 {
-            cell.backgroundColor = UIColor(colorLiteralRed: 0.99, green: 0.99, blue: 0.99, alpha: 1)
+            cell.backgroundColor = UIColor(colorLiteralRed: 0.95, green: 0.95, blue: 0.95, alpha: 1)
         }
         else {
             cell.backgroundColor = UIColor.white
@@ -235,24 +247,34 @@ class ListTableViewController: UITableViewController
         let lastElement = books.count - 1
         if indexPath.row == lastElement {
             // handle your logic here to get more items, add it to dataSource and reload tableview
+            //let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+  /*          let label = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
+            label.text = "Load More..."
+            cell.contentView.addSubview(label)*/
             
-            let startIndex = books.count + 1
+            if startIndex != books.count + 1
+            {
+                 startIndex = books.count + 1
             
-            getDataFromURL(baseUrl+sortOrder+"&start_index=\(startIndex)")
-            //print("startIndex : \(startIndex)")
-            
-            self.tableView.reloadData()
+                getDataFromURL(baseUrl+sortOrder+"&query="+searchKeyword+"&start_index=\(startIndex)")
+                //print("startIndex : \(startIndex)")
+            }
         }
     }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        self.performSegue(withIdentifier: "showBookInfo", sender: indexPath)
+    }
+    
     
     //MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
-        if segue.identifier == "show" {
+        if segue.identifier == "showBookInfo" {
             if let detailViewController = segue.destination as? BookInfoViewController {
-                
                 let indexPath = self.tableView.indexPathForSelectedRow
                 //print(" indexPath  "+self.books[(indexPath?.row)!].bookId)
                 detailViewController.book = self.books[(indexPath?.row)!]
@@ -310,8 +332,10 @@ extension ListTableViewController: UISearchBarDelegate {
         
         books = []
         
+        searchKeyword = searchBar.text!
+        
         let url = baseUrl+"&query="
-        getDataFromURL(url+searchBar.text!)
+        getDataFromURL(url+searchKeyword)
     }
 }
 

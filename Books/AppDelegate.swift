@@ -8,7 +8,8 @@
 
 import UIKit
 import FolioReaderKit
-
+import GoogleMobileAds
+import FirebaseCore
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -20,9 +21,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        print("test")
+        
         Util.setSessionId()
         
+        // Use Firebase library to configure APIs
+        FirebaseApp.configure()
+        GADMobileAds.configure(withApplicationID: "ca-app-pub-1966927625201357~9016686428")
+
         return true
     }
     

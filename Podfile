@@ -13,5 +13,7 @@ target 'Books' do
   pod 'SDWebImage' , '4.0.0'
   pod 'Cosmos', '8.0.2'
   pod 'PDFReader'
+  pod 'Firebase/Core'
+  pod 'Firebase/AdMob'
 end
 
