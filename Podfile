@@ -9,11 +9,11 @@ use_frameworks!
 target 'Books' do
   pod 'MZDownloadManager', '3.2'
   pod 'FolioReaderKit', path: './FolioReaderKit-master'
-  #pod 'FolioReaderKit'
   pod 'SDWebImage' , '4.0.0'
-  pod 'Cosmos', '8.0.2'
-  pod 'PDFReader'
+  #pod 'Cosmos', '8.0.2'
+  pod 'PDFReader', path: './iOS-PDF-Reader-master'
   pod 'Firebase/Core'
   pod 'Firebase/AdMob'
+  pod 'Eureka'
 end
 

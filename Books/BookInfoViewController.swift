@@ -35,6 +35,8 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
     var fileType = String()
     var fileSize = String()
     
+    var actInd : UIActivityIndicatorView = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: 40, height: 40)) as UIActivityIndicatorView
+    
     @IBOutlet weak var authorLabel: UILabel!
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var imageView: UIImageView!
@@ -133,11 +135,22 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
         
         
         print("Google Mobile Ads SDK version: " + GADRequest.sdkVersion())
-        bannerView.adUnitID = "ca-app-pub-3940256099942544/2934735716" //test
+        //bannerView.adUnitID = "ca-app-pub-3940256099942544/2934735716" //test
+        bannerView.adUnitID = "ca-app-pub-1966927625201357/7400352420" //real
         bannerView.rootViewController = self
         bannerView.load(GADRequest())
     }
    
+    
+    func runActivity() {
+        actInd.startAnimating()
+    }
+    
+    
+    func stopActivity() {
+        actInd.stopAnimating()
+    }
+
     
     //Check Aleady Downloaded
     
@@ -219,7 +232,7 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
     {
         print("link = "+link)
         
-//        self.runActivity()
+        self.runActivity()
         
         let url:URL = URL(string: link)!
         let session = URLSession.shared
@@ -293,9 +306,11 @@ class BookInfoViewController: UIViewController, XMLParserDelegate, UITableViewDe
         
         DispatchQueue.main.async(execute: {
            // self.tableView.reloadData()
-           // self.stopActivity()
+
             if let typeLabel = self.fileTypeLabel { typeLabel.text = "File Type : \(self.fileType)"}
             if let sizeLabel = self.fileSizeLabel { sizeLabel.text = "File Size : \(self.fileSize)"}
+            
+            self.stopActivity()
         })
     }
     

@@ -3,6 +3,7 @@ import FolioReaderKit
 import MZDownloadManager
 import RealmSwift
 import PDFReader
+import AVFoundation
 
 class MyBooksViewController: UITableViewController {
     
@@ -23,7 +24,7 @@ class MyBooksViewController: UITableViewController {
     }
    
     let config = FolioReaderConfig()
-    
+
     
     @IBOutlet weak var menuButton: UIBarButtonItem!
     
@@ -32,7 +33,7 @@ class MyBooksViewController: UITableViewController {
         
         super.viewDidLoad()
         
-        title = "My Books"
+       // title = "My Books"
         
         // Do any additional setup after loading the view.
        print("ePub Dir :\(MZUtility.baseFilePath+"/ePub")")
@@ -40,8 +41,8 @@ class MyBooksViewController: UITableViewController {
        
         NotificationCenter.default.addObserver(self, selector: NSSelectorFromString("downloadFinishedNotification:"), name: NSNotification.Name(rawValue: MZUtility.DownloadCompletedNotif as String), object: nil)
 
-        readerConfig()
-        getPlist()
+//        readerConfig()
+        plistSetup()
        
         //reveal view
         
@@ -56,7 +57,9 @@ class MyBooksViewController: UITableViewController {
             view.addGestureRecognizer(self.revealViewController().panGestureRecognizer())
         }
 */
-    }
+        
+
+   }
     
     override func viewDidAppear(_ animated: Bool) {
         badgeCount = 0
@@ -118,7 +121,7 @@ class MyBooksViewController: UITableViewController {
         }
     }
 */
-    func getPlist()
+    func plistSetup()
     {
         //Plist
         pathOfMyBooksPlist = myDownloadPath+"/MyBooks.plist"
@@ -131,6 +134,9 @@ class MyBooksViewController: UITableViewController {
         print(booksInfo.count)
     }
     
+    
+    //sort desc
+    
     func updateBooksInfo()
     {
         let saveBooksInfo = NSMutableArray(array: booksInfo.reverseObjectEnumerator().allObjects).mutableCopy() as! NSMutableArray
@@ -142,7 +148,7 @@ class MyBooksViewController: UITableViewController {
     func downloadFinishedNotification(_ notification : Notification)
     {
         print("downloadFinishedNotification")
-        getPlist()
+        plistSetup()
         //updateBooksInfo()
         
         badgeCount += 1
@@ -150,29 +156,58 @@ class MyBooksViewController: UITableViewController {
         tableView.reloadData()
     }
 
-    
-    func btn1Action() {
-        
-    }
-    
+
     
     //EPUB
     func readerConfig()
     {
         print("readerConfig")
         
+        let settings = Util.getSettings()
+
         config.shouldHideNavigationOnTap = true
         config.scrollDirection = .horizontal
-        
+        config.hidePageIndicator = true
+
         // See more at FolioReaderConfig.swift
         //        config.canChangeScrollDirection = false
-        //        config.enableTTS = false
-        //        config.allowSharing = false
-        config.tintColor = UIColor.red
-        //        config.toolBarTintColor = UIColor.redColor()
-        //        config.toolBarBackgroundColor = UIColor.purpleColor()
-        //        config.menuTextColor = UIColor.brownColor()
-        //        config.menuBackgroundColor = UIColor.lightGrayColor()
+        
+        config.enableTTS = settings.object(forKey: "tts") as! Bool
+        
+/*        if config.enableTTS == false { backgroundSoundSetting(false)}
+        else
+        {
+            let onoff = settings.object(forKey: "back_audio") as! Bool
+            backgroundSoundSetting(onoff)
+        }
+ */
+        
+        let color = settings.object(forKey: "menu_color") as! String
+        
+        switch color {
+        case "Black":
+            config.tintColor = UIColor.black
+        case "Red":
+            config.tintColor = UIColor.red
+        case "Blue":
+            config.tintColor = UIColor.blue
+        case "Purple":
+            config.tintColor = UIColor.purple
+        case "Green":
+            config.tintColor = UIColor.green
+        case "Brown":
+            config.tintColor = UIColor.brown
+        case "DarkGray":
+            config.tintColor = UIColor.darkGray
+        default:
+            config.tintColor = UIColor.purple
+        }
+
+        //config.allowSharing = false
+        
+        //config.menuTextColor = UIColor.brown
+        //config.menuBackgroundColor = UIColor.lightGray
+        
         //        config.hidePageIndicator = true
         //    config.realmConfiguration = Realm.Configuration(fileURL: FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("highlights.realm"))
         
@@ -183,11 +218,70 @@ class MyBooksViewController: UITableViewController {
 
     }
     
+/*    func backgroundSoundSetting(_ value:Bool)
+    {
+        //Background Sound
+        
+        print("background Sound : \(value)!")
+        
+        if (value == false)
+        {
+            do { try AVAudioSession.sharedInstance().setActive(false) }
+            catch {
+                print("AVAudioSession is NOT Active")
+            }
+        }
+        else
+        {
+            do {
+                try AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback, with: .mixWithOthers)
+                print("AVAudioSession Category Playback OK")
+                do {
+                    try AVAudioSession.sharedInstance().setActive(true)
+                    print("AVAudioSession is Active")
+                } catch {
+                    print(error)
+                }
+            } catch {
+                print(error)
+            }
+        }
+    }
+*/
+    
+    func openEpub(_ epubName: String) {
+        
+        readerConfig()
+        
+        let bookPath = myDownloadPath+"/\(epubName)"
+        
+        print("bookPath:\(bookPath)")
+        FolioReader.presentReader(parentViewController: self, withEpubPath: bookPath, andConfig: config, shouldRemoveEpub: false)
+    }
+    
+    
+    //PDF
+    func openPDF(_ pdfName: String, title: String)
+    {
+        let path = myDownloadPath+"/\(pdfName)"
+        let documentFileURL = URL(fileURLWithPath: path)
+        let document = PDFDocument(url: documentFileURL)!
+        
+        
+        let readerController = PDFViewController.createNew(with: document)
+        
+        readerController.title = title
+        navigationController?.pushViewController(readerController, animated: true)
+    }
+    
+    
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    
 }
 
 //MARK: UITableViewDataSource Handler Extension
@@ -267,60 +361,12 @@ extension MyBooksViewController {
         let fileType = book.object(forKey: "file_type") as! String
         if fileType == "PDF" {
             fileName = "\(String(describing: bookId)).pdf"
-            openPDF(fileName)
+            openPDF(fileName, title: book.object(forKey: "title") as! String)
         }
         else {
             fileName = "\(String(describing: bookId)).epub"
             openEpub(fileName)
         }
-    }
-    
-    func openEpub(_ epubName: String) {
-        
-        // Custom sharing quote background
-        //let customImageQuote = QuoteImage(withImage: UIImage(named: "logo.png")!, alpha: 0.6, backgroundColor: UIColor.black)
-        //let customQuote = QuoteImage(withColor: UIColor(red:0.30, green:0.26, blue:0.20, alpha:1.0), alpha: 1.0, textColor: UIColor(red:0.86, green:0.73, blue:0.70, alpha:1.0))
-        
-        //config.quoteCustomBackgrounds = [customImageQuote, customQuote]
-        
-        
-        
-        
-        // See more at FolioReaderConfig.swift
-        //        config.canChangeScrollDirection = false
-        //        config.enableTTS = false
-        //        config.allowSharing = false
-        //        config.tintColor = UIColor.blueColor()
-        //        config.toolBarTintColor = UIColor.redColor()
-        //        config.toolBarBackgroundColor = UIColor.purpleColor()
-        //        config.menuTextColor = UIColor.brownColor()
-        //        config.menuBackgroundColor = UIColor.lightGrayColor()
-        //        config.hidePageIndicator = true
-        
-        
-        // Epub file
-        //let epubName = "54483";
-        let bookPath = myDownloadPath+"/\(epubName)"
-        
-        print("bookPath:\(bookPath)")
-        FolioReader.presentReader(parentViewController: self, withEpubPath: bookPath, andConfig: config, shouldRemoveEpub: false)
-    }
-    
-
-    //PDF
-    func openPDF(_ pdfName: String)
-    {
-        let path = myDownloadPath+"/\(pdfName)"
-      //  let remotePDFDocumentURLPath = path
-      //  let remotePDFDocumentURL = URL(string: remotePDFDocumentURLPath)!
-      //  let document = PDFDocument(url: remotePDFDocumentURL)!
-        
-        
-        let documentFileURL = URL(fileURLWithPath: path)
-        let document = PDFDocument(url: documentFileURL)!
-        
-        let readerController = PDFViewController.createNew(with: document)
-        navigationController?.pushViewController(readerController, animated: true)
     }
     
     

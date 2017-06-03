@@ -11,7 +11,7 @@ import UIKit
 class Util {
 
     
-    public static var sessionId : String!
+    open static var sessionId : String!
     
     open static func setSessionId()
     {
@@ -54,7 +54,31 @@ class Util {
     }()
     
     
-    public static func imageViewShadow(imageView:UIImageView) -> UIImageView
+    open static func getSettings() -> NSMutableDictionary
+    {
+        let path = Util.homeDir+"/Settings.plist"
+        
+        var settings = NSMutableDictionary()
+        
+        if NSMutableDictionary(contentsOfFile: path) != nil {
+            settings = NSMutableDictionary(contentsOfFile: path)!
+        }
+        else {
+            
+            settings.setValue(true, forKey: "tts")
+            settings.setValue(true, forKey: "back_audio")
+            settings.setValue("Purple", forKey: "menu_color")
+            
+            print("path:\(path)")
+            
+            settings.write(toFile: path, atomically: true)
+        }
+        
+        return settings
+    }
+    
+    
+    open static func imageViewShadow(imageView:UIImageView) -> UIImageView
     {
         imageView.layer.shadowColor = UIColor.black.cgColor
         imageView.layer.shadowOpacity = 0.6
@@ -65,11 +89,10 @@ class Util {
     }
     
     
-    public static func burnText2ImageView(image:UIImage, title:String) -> UIImage
+    open static func burnText2ImageView(image:UIImage, title:String) -> UIImage
     {
         let newImageView = UIImageView(image : image)
-        let labelView = UILabel(frame: CGRect(x:25 , y:10 , width: image.size.width*0.7, height: image.size.height*0.7)
-)
+        let labelView = UILabel(frame: CGRect(x:25 , y:10 , width: image.size.width*0.7, height: image.size.height*0.7))
         var fontSize = 30.0;
         
         if (title.characters.count > 100) {fontSize = 18.0}

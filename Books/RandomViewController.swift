@@ -8,18 +8,13 @@
 
 import UIKit
 import SDWebImage
+import GoogleMobileAds
 
-extension String {
-    var lines: [String] {
-        var result: [String] = []
-        enumerateLines { line, _ in result.append(line) }
-        return result
-    }
-}
-
-class ListTableViewController: UITableViewController
+class RandomViewController: UITableViewController
 {
     //MARK: Properties
+    
+    @IBOutlet weak var bannerView: GADBannerView!
     
     let searchController = UISearchController(searchResultsController: nil)
     
@@ -27,70 +22,49 @@ class ListTableViewController: UITableViewController
     var baseUrl = "http://m.gutenberg.org/ebooks/search.mobile/?"
     let rowCountDisplayed = 25
     
-    var searchKeyword = ""
-    
-    //  let spinner = UIActivityIndicatorView()
-    
     var actInd : UIActivityIndicatorView = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: 40, height: 40)) as UIActivityIndicatorView
     
     var books = [Book]()
     var booksCount:Int = 0
     var startIndex : Int = 0
-
-    @IBOutlet weak var segmentedControl: UISegmentedControl!
     
-    @IBAction func sortOrderChanged(_ sender: Any) {
+    @IBOutlet weak var refreshButtonItem: UIBarButtonItem!
+    
+    @IBAction func refreshAction(_ sender: Any) {
         
-        switch segmentedControl.selectedSegmentIndex
-        {
-        case 0:
-            sortOrder = "sort_order=release_date";
-        case 1:
-            sortOrder = "sort_order=downloads";
-
-        default:
-            break;
-        }
-        
-        books = []
-        startIndex = 0
-
+        books = [Book]()
         tableView.reloadData()
-        getDataFromURL(baseUrl+sortOrder)
         
-       // let indexPath = IndexPath(row: 0, section: 0)
-       // tableView.selectRow(at: indexPath, animated: false, scrollPosition: UITableViewScrollPosition.top)
+        listData()
     }
+    
     
     override func viewDidLoad() {
         
         super.viewDidLoad()
 
-        // Setup the Search Controller
-        searchController.searchResultsUpdater = self
-        searchController.searchBar.delegate = self
-        definesPresentationContext = true
-        searchController.dimsBackgroundDuringPresentation = false
+  /*      print("Google Mobile Ads SDK version: " + GADRequest.sdkVersion())
+        //bannerView.adUnitID = "ca-app-pub-3940256099942544/2934735716" //test
+        bannerView.adUnitID = "ca-app-pub-1966927625201357/7400352420" //real
+        bannerView.rootViewController = self
+        bannerView.load(GADRequest())*/
         
-        // Setup the Scope Bar
-        //searchController.searchBar.scopeButtonTitles = ["All", "Chocolate", "Hard", "Other"]
-        tableView.tableHeaderView = searchController.searchBar
+        listData()
         
+
+    }
+    
+    func listData()
+    {
         actInd.center = (self.parent?.view.center)!
         actInd.hidesWhenStopped = true
         actInd.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.gray
         parent?.view.addSubview(actInd)
         
-        
         //XML
-        sortOrder = "sort_order=release_date"
+        sortOrder = "sort_order=random"
         getDataFromURL(baseUrl+sortOrder)
-        
-        
-        print("session Id : \(Util.sessionId)")
-     }
-
-    
+    }
     
     func runActivity() {
         actInd.startAnimating()
@@ -160,7 +134,7 @@ class ListTableViewController: UITableViewController
                 book.title = title
                 book.author = author
                 book.url = baseUrl+sortOrder //used for Session Id
-
+                
                 //print("book.url : "+book.url)
                 
                 books.append(book)
@@ -243,16 +217,16 @@ class ListTableViewController: UITableViewController
         if indexPath.row == lastElement {
             // handle your logic here to get more items, add it to dataSource and reload tableview
             //let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-  /*          let label = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
-            label.text = "Load More..."
-            cell.contentView.addSubview(label)*/
+            /*          let label = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
+             label.text = "Load More..."
+             cell.contentView.addSubview(label)*/
             
             if startIndex != books.count + 1
             {
                 startIndex = books.count + 1
-                getDataFromURL(baseUrl+sortOrder+"&query="+searchKeyword+"&start_index=\(startIndex)")
                 
-                print("startIndex : \(startIndex)")
+                getDataFromURL(baseUrl+sortOrder+"&start_index=\(startIndex)")
+                //print("startIndex : \(startIndex)")
             }
         }
     }
@@ -312,37 +286,6 @@ class ListTableViewController: UITableViewController
      }
      */
     
-}
-
-extension ListTableViewController: UISearchBarDelegate {
-    // MARK: - UISearchBar Delegate
-    func searchBar(_ searchBar: UISearchBar, selectedScopeButtonIndexDidChange selectedScope: Int) {
-        //filterContentForSearchText(searchBar.text!, scope: searchBar.scopeButtonTitles![selectedScope])
-        
-        print("1 searchBar.text = \(String(describing: searchBar.text))")
-    }
-    
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        print("searchBarSearchButtonClicked")
-        
-        books = []
-        
-        searchKeyword = searchBar.text!
-        
-        let url = baseUrl+"&query="
-        getDataFromURL(url+searchKeyword)
-    }
-}
-
-extension ListTableViewController: UISearchResultsUpdating {
-    // MARK: - UISearchResultsUpdating Delegate
-    func updateSearchResults(for searchController: UISearchController) {
-        //let searchBar = searchController.searchBar
-        // let scope = searchBar.scopeButtonTitles![searchBar.selectedScopeButtonIndex]
-        //        filterContentForSearchText(searchController.searchBar.text!, scope: scope)
-        //print("2 baseUrl+searchBar.text:\(baseUrl)\(String(describing: searchBar.text))")
-        
-    }
 }
 
 

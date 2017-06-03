@@ -1,6 +1,6 @@
 PODS:
   - AEXML (4.0.0)
-  - Cosmos (8.0.2)
+  - Eureka (3.0.0)
   - Firebase/AdMob (4.0.0):
     - Firebase/Core
     - Google-Mobile-Ads-SDK (= 7.20.0)
@@ -44,21 +44,23 @@ PODS:
   - ZFDragableModalTransition (0.6)
 
 DEPENDENCIES:
-  - Cosmos (= 8.0.2)
+  - Eureka
   - Firebase/AdMob
   - Firebase/Core
   - FolioReaderKit (from `./FolioReaderKit-master`)
   - MZDownloadManager (= 3.2)
-  - PDFReader
+  - PDFReader (from `./iOS-PDF-Reader-master`)
   - SDWebImage (= 4.0.0)
 
 EXTERNAL SOURCES:
   FolioReaderKit:
     :path: ./FolioReaderKit-master
+  PDFReader:
+    :path: ./iOS-PDF-Reader-master
 
 SPEC CHECKSUMS:
   AEXML: 6fc6433aa35bdc15dd8eb8d54eb7aa4520a010eb
-  Cosmos: 007c0b8e33a85e5363911bdd933571bbe221f7ef
+  Eureka: f36fd440c3ebb7bfea0a4fbe6f16a05f1cb35906
   Firebase: 284eea779b73fdff309791817da7c68bff8dd572
   FirebaseAnalytics: 6f08e746f7d66f5452931bc2e822b5df9c66b64a
   FirebaseCore: 85ad466044c2f013cdb167f85d426d15b128114a
@@ -70,13 +72,13 @@ SPEC CHECKSUMS:
   JSQWebViewController: 0461aa42612b221571556df61d9c09f080cb2eef
   MenuItemKit: 9af69953dc983803ee85230e205fadbac0f26213
   MZDownloadManager: 463f78e00530f3661a5adea649c1801747cc6165
-  PDFReader: 0bb6be11c8876c6cea2598f0a0ab9b6640a8a018
+  PDFReader: 355b34585116032fdce60077347596286bb00a6b
   Realm: 07e5d3a9e0e41d65fd5f9f05150ed6295d0f093b
   RealmSwift: 6d06425d3900c86473c4f323bf6949b43fca22bc
   SDWebImage: 76a6348bdc74eb5a55dd08a091ef298e56b55e41
   SSZipArchive: 04547dfa448be5ed7ecbaf7eaf8a6e9eb9b42997
   ZFDragableModalTransition: 0d294eaaba6edfcb9839595de765f9ca06a4b524
 
-PODFILE CHECKSUM: a9147841aa1ff0d2e1d9b2ef05dc3b6cd65a12e1
+PODFILE CHECKSUM: 8c5a60a0c95b6cfea4f1c94b07753382956aed4b
 
-COCOAPODS: 1.2.0
+COCOAPODS: 1.2.1
